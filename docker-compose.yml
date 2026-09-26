@@ -16,6 +16,18 @@ services:
     volumes:
       - .:/code
 
+  worker:
+    build: .
+    command: ["python", "-m", "app.services.review_summary"]
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://user:password@postgres:5432/booking_db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/code
+
   postgres:
     image: postgres:15
     environment:

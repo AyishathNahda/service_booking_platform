@@ -58,3 +58,36 @@ def get_provider_reviews(
         
     reviews = db.query(Review).join(Booking).filter(Booking.provider_id == provider_id).all()
     return reviews
+
+import uuid
+import json
+import redis
+from app.config import settings
+from app.schemas import ReviewSummarizeRequest, ReviewSummarizeResponse
+
+redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
+
+@router.post("/summarize", response_model=ReviewSummarizeResponse)
+def summarize_reviews(
+    request: ReviewSummarizeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role not in [RoleEnum.admin, RoleEnum.provider]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    if current_user.role == RoleEnum.provider and current_user.id != request.provider_id:
+        raise HTTPException(status_code=403, detail="Can only summarize your own reviews")
+        
+    provider = db.query(User).filter(User.id == request.provider_id, User.role == RoleEnum.provider).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+        
+    job_id = str(uuid.uuid4())
+    job_data = {
+        "job_id": job_id,
+        "provider_id": request.provider_id
+    }
+    
+    redis_client.lpush("review_summary_queue", json.dumps(job_data))
+    
+    return {"message": "Review summarisation job queued", "job_id": job_id}

@@ -63,3 +63,10 @@ class ReviewResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ReviewSummarizeRequest(BaseModel):
+    provider_id: int
+
+class ReviewSummarizeResponse(BaseModel):
+    message: str
+    job_id: str

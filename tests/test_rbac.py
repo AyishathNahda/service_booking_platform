@@ -1,41 +1,7 @@
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 import uuid
 
-from app.main import app
-from app.database import Base, get_db
-
-# Use SQLite for testing
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
-
-client = TestClient(app)
-
-@pytest.fixture(autouse=True)
-def setup_db():
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
-
-def create_user(role: str):
+def create_user(client, role: str):
     unique_email = f"{uuid.uuid4()}@example.com"
     response = client.post("/auth/register", json={
         "name": f"Test {role}",
@@ -45,27 +11,27 @@ def create_user(role: str):
     })
     return response.json()
 
-def login(email: str):
+def login(client, email: str):
     response = client.post("/auth/login", data={
         "username": email,
         "password": "password123"
     })
     return response.json()["access_token"]
 
-def test_rbac_rules():
+def test_rbac_rules(client):
     # 1. Create Users
-    admin = create_user("admin")
-    prov_a = create_user("provider")
-    prov_b = create_user("provider")
-    cust_a = create_user("customer")
-    cust_b = create_user("customer")
+    admin = create_user(client, "admin")
+    prov_a = create_user(client, "provider")
+    prov_b = create_user(client, "provider")
+    cust_a = create_user(client, "customer")
+    cust_b = create_user(client, "customer")
 
     # 2. Login to get tokens
-    admin_token = login(admin["email"])
-    prov_a_token = login(prov_a["email"])
-    prov_b_token = login(prov_b["email"])
-    cust_a_token = login(cust_a["email"])
-    cust_b_token = login(cust_b["email"])
+    admin_token = login(client, admin["email"])
+    prov_a_token = login(client, prov_a["email"])
+    prov_b_token = login(client, prov_b["email"])
+    cust_a_token = login(client, cust_a["email"])
+    cust_b_token = login(client, cust_b["email"])
 
     def auth_header(token):
         return {"Authorization": f"Bearer {token}"}
