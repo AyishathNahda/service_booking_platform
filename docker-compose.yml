@@ -4,7 +4,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@postgres:5432/booking_db
+      - DATABASE_URL=postgresql+psycopg2://user:password@postgres:5432/booking_db
       - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET=supersecretkey_change_me_in_production
       - JWT_EXPIRE_MINUTES=30
