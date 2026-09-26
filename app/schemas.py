@@ -25,3 +25,25 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+class BookingCreate(BaseModel):
+    provider_id: int
+    start_time: datetime
+    end_time: datetime
+
+class BookingUpdate(BaseModel):
+    status: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+
+class BookingResponse(BaseModel):
+    id: int
+    provider_id: int
+    customer_id: int
+    start_time: datetime
+    end_time: datetime
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
