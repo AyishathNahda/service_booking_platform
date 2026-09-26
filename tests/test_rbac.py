@@ -1,5 +1,5 @@
-import pytest
 import uuid
+
 
 def create_user(client, role: str):
     unique_email = f"{uuid.uuid4()}@example.com"

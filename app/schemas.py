@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel, Field
+
 from app.models import RoleEnum
+
 
 class UserCreate(BaseModel):
     name: str
@@ -24,7 +26,7 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    email: Optional[str] = None
+    email: str | None = None
 
 class BookingCreate(BaseModel):
     provider_id: int
@@ -32,9 +34,9 @@ class BookingCreate(BaseModel):
     end_time: datetime
 
 class BookingUpdate(BaseModel):
-    status: Optional[str] = None
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
+    status: str | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
 
 class BookingResponse(BaseModel):
     id: int
@@ -51,14 +53,14 @@ class BookingResponse(BaseModel):
 class ReviewCreate(BaseModel):
     booking_id: int
     rating: int = Field(..., ge=1, le=5)
-    comment: Optional[str] = None
+    comment: str | None = None
 
 class ReviewResponse(BaseModel):
     id: int
     booking_id: int
     customer_id: int
     rating: int
-    comment: Optional[str] = None
+    comment: str | None = None
     created_at: datetime
 
     class Config:

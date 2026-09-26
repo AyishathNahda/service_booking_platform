@@ -1,7 +1,9 @@
 import json
 import logging
-import redis
 import time
+
+import redis
+
 from app.config import settings
 
 logging.basicConfig(level=logging.INFO)

@@ -1,5 +1,6 @@
 import uuid
 
+
 def test_register(client):
     email = f"{uuid.uuid4()}@example.com"
     response = client.post("/auth/register", json={

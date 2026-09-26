@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.config import settings
+
 from app.routers import auth, bookings, reviews
 
 app = FastAPI(title="Service Booking Platform API")

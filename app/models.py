@@ -1,8 +1,19 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, CheckConstraint
+import enum
+
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-import enum
+
 from app.database import Base
+
 
 class RoleEnum(str, enum.Enum):
     admin = "admin"

@@ -1,10 +1,11 @@
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+
 from app.database import get_db
-from app.models import Booking, User, RoleEnum
-from app.schemas import BookingCreate, BookingUpdate, BookingResponse
 from app.dependencies import get_current_user
+from app.models import Booking, RoleEnum, User
+from app.schemas import BookingCreate, BookingResponse, BookingUpdate
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 
@@ -40,7 +41,7 @@ def check_booking_ownership(booking: Booking, current_user: User):
     if current_user.role == RoleEnum.customer and booking.customer_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to access this booking")
 
-@router.get("", response_model=List[BookingResponse])
+@router.get("", response_model=list[BookingResponse])
 def get_bookings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -106,4 +107,3 @@ def delete_booking(
         
     db.delete(booking)
     db.commit()
-    return None

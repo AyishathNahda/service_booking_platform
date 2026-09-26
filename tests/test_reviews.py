@@ -1,5 +1,5 @@
-import uuid
 from tests.test_rbac import create_user, login
+
 
 def test_reviews_flow(client):
     prov = create_user(client, "provider")

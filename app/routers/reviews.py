@@ -1,10 +1,11 @@
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+
 from app.database import get_db
-from app.models import Review, Booking, User, RoleEnum, BookingStatusEnum
-from app.schemas import ReviewCreate, ReviewResponse
 from app.dependencies import get_current_user
+from app.models import Booking, BookingStatusEnum, Review, RoleEnum, User
+from app.schemas import ReviewCreate, ReviewResponse
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -47,7 +48,7 @@ def create_review(
     db.refresh(new_review)
     return new_review
 
-@router.get("/provider/{provider_id}", response_model=List[ReviewResponse])
+@router.get("/provider/{provider_id}", response_model=list[ReviewResponse])
 def get_provider_reviews(
     provider_id: int,
     db: Session = Depends(get_db)
@@ -59,9 +60,11 @@ def get_provider_reviews(
     reviews = db.query(Review).join(Booking).filter(Booking.provider_id == provider_id).all()
     return reviews
 
-import uuid
 import json
+import uuid
+
 import redis
+
 from app.config import settings
 from app.schemas import ReviewSummarizeRequest, ReviewSummarizeResponse
 
