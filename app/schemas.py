@@ -47,3 +47,19 @@ class BookingResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ReviewCreate(BaseModel):
+    booking_id: int
+    rating: int = Field(..., ge=1, le=5)
+    comment: Optional[str] = None
+
+class ReviewResponse(BaseModel):
+    id: int
+    booking_id: int
+    customer_id: int
+    rating: int
+    comment: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
