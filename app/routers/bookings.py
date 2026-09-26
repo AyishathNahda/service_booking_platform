@@ -32,14 +32,25 @@ def create_booking(
     db.refresh(new_booking)
     return new_booking
 
+def check_booking_ownership(booking: Booking, current_user: User):
+    if current_user.role == RoleEnum.admin:
+        return
+    if current_user.role == RoleEnum.provider and booking.provider_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this booking")
+    if current_user.role == RoleEnum.customer and booking.customer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this booking")
+
 @router.get("", response_model=List[BookingResponse])
 def get_bookings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # RBAC logic will be fully implemented in Phase 5
-    # For now, we return all bookings (or we could just return it)
-    return db.query(Booking).all()
+    if current_user.role == RoleEnum.admin:
+        return db.query(Booking).all()
+    elif current_user.role == RoleEnum.provider:
+        return db.query(Booking).filter(Booking.provider_id == current_user.id).all()
+    else:
+        return db.query(Booking).filter(Booking.customer_id == current_user.id).all()
 
 @router.get("/{booking_id}", response_model=BookingResponse)
 def get_booking(
@@ -50,6 +61,8 @@ def get_booking(
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+        
+    check_booking_ownership(booking, current_user)
     return booking
 
 @router.put("/{booking_id}", response_model=BookingResponse)
@@ -62,6 +75,8 @@ def update_booking(
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+        
+    check_booking_ownership(booking, current_user)
         
     if booking_in.status is not None:
         booking.status = booking_in.status
@@ -86,6 +101,9 @@ def delete_booking(
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+        
+    check_booking_ownership(booking, current_user)
+        
     db.delete(booking)
     db.commit()
     return None
